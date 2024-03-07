@@ -14,8 +14,8 @@ struct Cli {
     /// estado de emissão do CPF
     #[arg(short = 'e', long = "estado", default_value_t = String::from(""))]
     state: String,
-    #[arg(short = 'p', default_value_t = false)]
     /// mostrar CPF com pontuação
+    #[arg(short = 'p', default_value_t = false)]
     punctuated: bool,
 }
 
