@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::{collections::HashMap, fmt::format};
 
 use clap::Parser;
 use rand::prelude::*;
@@ -8,21 +8,29 @@ use rand::prelude::*;
 #[command(version = "1.0")]
 #[command(about = "gerador de cpf na linha de comando", long_about = None)]
 struct Cli {
+    /// número de CPFs
     #[arg(short = 'n', default_value_t = 1)]
     number: u32,
-    // TODO: validar entre 0 e 9
-    // TODO: mostrar opcoes na mensagem de ajuda
-    #[arg(short = 'r', default_value_t = -1)]
-    region: i32,
+    /// estado de emissão do CPF
+    #[arg(short = 'e', long = "estado", default_value_t = String::from(""))]
+    state: String,
     #[arg(short = 'p', default_value_t = false)]
+    /// mostrar CPF com pontuação
     punctuated: bool,
 }
 
 fn main() {
     let cli = Cli::parse();
+    let mut region_map = HashMap::<String, i32>::new();
+    populate_regions_map(&mut region_map);
+
+    let region: i32 = match region_map.get(&cli.state.to_uppercase()) {
+        Some(i) => *i,
+        None => -1,
+    };
 
     for _ in 0..cli.number {
-        println!("{}", generate_cpf(cli.punctuated, cli.region));
+        println!("{}", generate_cpf(cli.punctuated, region));
     }
 }
 
@@ -72,4 +80,26 @@ fn generate_digit(nums: &Vec<u32>) -> u32 {
     } else {
         11 - (sum % 11)
     }
+}
+
+fn populate_regions_map(hm: &mut HashMap<String, i32>) {
+    let states_per_region = HashMap::<i32, String>::from([
+        (0, "RS".into()),
+        (1, "DF, GO, MS, MT, TO".into()),
+        (2, "AC, AM, AP, PA, RO, RR".into()),
+        (3, "CE, MA, PI".into()),
+        (4, "AL, PB, PE, RN".into()),
+        (5, "BA, SE".into()),
+        (6, "MG".into()),
+        (7, "ES, RJ".into()),
+        (8, "SP".into()),
+        (9, "PR, SC".into()),
+    ]);
+
+    states_per_region.iter().for_each(|(k, v)| {
+        let states: Vec<&str> = v.split(", ").collect();
+        states.iter().for_each(|state| {
+            hm.insert(state.to_string(), *k);
+        })
+    });
 }

@@ -26,13 +26,13 @@ para gerar um cpf com pontuação
 cpf -p
 ```
 
-para gerar um cpf de uma região específica
+para gerar um cpf de um estado específico
 ```sh
-cpf -r 1
+cpf -e mg
 ```
 
-para gerar vários cpfs de uma região específica com pontuação
+para gerar vários cpfs de um estado específico com pontuação
 ```sh
-cpf -n 10 -r 8 -p
+cpf -n 10 -e rj -p
 ```
 
