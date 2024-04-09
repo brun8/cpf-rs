@@ -17,6 +17,9 @@ struct Cli {
     /// mostrar CPF com pontuação
     #[arg(short = 'p', default_value_t = false)]
     punctuated: bool,
+    /// completar CPF incompleto
+    #[arg(short = 'c', long = "complete", default_value_t = String::from(""))]
+    partial: String,
 }
 
 fn main() {
@@ -29,9 +32,48 @@ fn main() {
         None => -1,
     };
 
-    for _ in 0..cli.number {
-        println!("{}", generate_cpf(cli.punctuated, region));
+    if cli.partial.len() > 0 {
+        println!("{}", complete_cpf(cli.partial, region));
+    } else {
+        for _ in 0..cli.number {
+            println!("{}", generate_cpf(cli.punctuated, region));
+        }
     }
+}
+
+fn complete_cpf(partial: String, region: i32) -> String {
+    if partial.len() >= 11 {
+        return partial;
+    }
+
+    let mut partial_vec: Vec<u32> = partial.chars().map(|n| n.to_digit(10).unwrap()).collect();
+
+    if partial_vec.len() < 9 {
+        for _ in 0..(9 - partial_vec.len()) {
+            let n: u32 = random::<u32>() % 9;
+            partial_vec.push(n);
+        }
+    }
+
+    if region != -1 {
+        partial_vec[8] = match u32::try_from(region) {
+            Ok(num) => num,
+            _ => 1,
+        };
+    }
+
+    if partial_vec.len() < 10 {
+        let d1 = generate_digit(&partial_vec);
+        partial_vec.push(d1);
+    }
+
+    if partial_vec.len() < 11 {
+        let d2 = generate_digit(&partial_vec[1..].to_owned());
+        partial_vec.push(d2);
+    }
+
+    let res: String = partial_vec.iter().map(|num| num.to_string()).collect();
+    res
 }
 
 fn generate_cpf(punctuated: bool, region: i32) -> String {
